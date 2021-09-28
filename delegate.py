@@ -1,4 +1,15 @@
 # coding: utf-8
+""" 
+Example:
+root@vmi658412:~# python3 delegate.py
+Enter keyring passphrase:
+umeed tx staking delegate umeevaloper1p25t9pydn2jr5f2gtncwruyen58edaqzkt6un3 3605uumee --gas auto --chain-id umee-betanet-2 --from umee1pppqel2znqzazd5rfy52hcfaawlft64xfq9gpc --fees 1000uumee
+umeed tx staking delegate umeevaloper1p25t9pydn2jr5f2gtncwruyen58edaqzkt6un3 5524357uumee --gas auto --chain-id umee-betanet-2 --from umee1cdq329j2sqghr7fw6ew6qj39yw8hp68xcwa7zw --fees 1000uumee
+root@vmi658412:~#
+
+execute every delegate command manually
+"""
+
 import os
 import json
 from subprocess import check_output
