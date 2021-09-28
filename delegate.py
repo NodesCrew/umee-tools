@@ -54,7 +54,7 @@ def get_balance(account):
 
     try:
         assert balances[0]["denom"] == "uumee"
-    except (IndexError, KeyError):
+    except (IndexError, KeyError, AssertionError):
         # print("Unable to get balance for %s: %s" % (account, balances))
         return 0
 
