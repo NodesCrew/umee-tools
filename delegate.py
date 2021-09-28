@@ -23,7 +23,6 @@ UMEE_CHAIN = os.environ.get("UMEE_CHAIN")
 
 def get_accounts():
     output = check_output(["umeed", "keys", "list"]).decode()
-
     lines = output.split("\n")
     accounts = list()
 
@@ -32,37 +31,43 @@ def get_accounts():
         if not line.startswith("address:"):
             continue
         accounts.append(line.split(":")[1].strip())
-
     return accounts
 
 
-def delegate(from_account, amount):
-    output = " ".join(["umeed", "tx", "staking", "delegate", VALOPER, "%duumee" % amount, "--gas", "auto", "--chain-id", UMEE_CHAIN, "--from", from_account, "--fees", "%duumee" % COMM_UUMEE])
+def print_delegate(from_account, amount):
+    output = " ".join([
+        "umeed", "tx", "staking", "delegate",
+        VALOPER,
+        "%duumee" % amount,
+        "--gas", "auto",
+        "--chain-id", UMEE_CHAIN,
+        "--from", from_account,
+        "--fees", "%duumee" % COMM_UUMEE
+    ])
     print(output)
 
 
 def get_balance(account):
-    output = check_output(["umeed", "q", "bank", "balances", account, "-o json"]).decode()
+    output = check_output([
+        "umeed", "q", "bank", "balances", account, "-o json"]).decode()
     balances = json.loads(output)["balances"]
 
     try:
         assert balances[0]["denom"] == "uumee"
     except (IndexError, KeyError):
-        #print("Unable to get balace for %s: %s" % (account, balances))
+        # print("Unable to get balance for %s: %s" % (account, balances))
         return 0
 
     return int(balances[0]["amount"])
 
 
-for account in get_accounts():
-    balance = get_balance(account)
+def __main__():
+    for account in get_accounts():
+        balance = get_balance(account)
+        amount = balance - HOLD_UUMEE - COMM_UUMEE
+        if amount > 0:
+            print_delegate(account, amount)
 
-    amount = balance - HOLD_UUMEE - COMM_UUMEE
 
-    if amount < 0:
-        # print("Not delegate from %s: balance too small: %d" % (account, balance))
-        continue
-
-    #print("Delegate %d uumee from %s" % (amount, account))
-    delegate(account, amount)
-
+if __name__ == "__main__":
+    __main__()
