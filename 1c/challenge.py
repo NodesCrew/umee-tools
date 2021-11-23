@@ -252,6 +252,7 @@ def generate_workers():
                 key_address, key_address, random.choice(_keys)))
 
     click.echo("type 'bash screen.sh' for start TX spam")
+    click.echo("type 'pkill screen' for stop TX spam")
 
 
 if __name__ == "__main__":
