@@ -27,7 +27,7 @@ python3 challenge.py create-keys --keys-number 5
 ```bash
 umeed keys show WALLET_HERE --output json
 ```
-6. Load your created wallets from self-delegate address balance
+6. Load your created wallets from self-delegate address balance (--limit is the amount that can be distributed among the keys in uumee).
 ```bash
 python3 challenge.py load-funds --fee=100 --limit=10000
 ```
@@ -38,4 +38,12 @@ python3 challenge.py import-keys
 8. Generate workers on 2,3..N server
 ```bash
 python3 challenge.py generate-workers
+```
+9. Start TX spam
+```bash
+bash screen.sh
+```
+10. Stop TX spam (warning! all screen sessions will be killed, not only started from screen.sh)
+```bash
+pkill screen
 ```
