@@ -46,6 +46,10 @@ def check_output_input(*popenargs, **kwargs):
         raise
     retcode = process.poll()
     if retcode:
+        print("An error happens")
+        print("stdout: %s" % output)
+        print("stderr: %s" % unused_err)
+        
         cmd = kwargs.get("args")
         if cmd is None:
             cmd = popenargs[0]
