@@ -99,7 +99,8 @@ def send_funds(source, target, amount, fee):
                                  "--fees", "%duumee" % fee,
                                  "--output", "json",
                                  "--node", config.RPC_URL,
-                                 "--chain-id", config.CHAIN_ID],
+                                 "--chain-id", config.CHAIN_ID,
+                                 "--yes"],
                                 input=config.KEYRING_PASSWORD).decode()
 
     print(output)
