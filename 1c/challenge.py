@@ -251,6 +251,8 @@ def generate_workers():
             w.write("screen -dmS %s ./spam_local.sh %s %s\n" % (
                 key_address, key_address, random.choice(_keys)))
 
+    click.echo("type 'bash screen.sh' for start TX spam")
+
 
 if __name__ == "__main__":
     cli()
