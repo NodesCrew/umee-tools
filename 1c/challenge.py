@@ -49,7 +49,7 @@ def check_output_input(*popenargs, **kwargs):
         print("An error happens")
         print("stdout: %s" % output)
         print("stderr: %s" % unused_err)
-        
+
         cmd = kwargs.get("args")
         if cmd is None:
             cmd = popenargs[0]
@@ -125,7 +125,7 @@ def create_keys(keys_number):
 
 
 @cli.command()
-@click.option("--limit", type=click.IntRange(100, 100000000), required=True,
+@click.option("--limit", type=click.IntRange(100, 100000000000), required=True,
               help="How many funds will be loaded to ALL keys from 'keys' dir")
 @click.option("--fee", type=click.IntRange(0, 1000), required=True)
 @click.option("--no-skip-funded", is_flag=True,
