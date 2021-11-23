@@ -226,7 +226,7 @@ def generate_workers():
             click.echo("Skip %s (balance %d)" % (key_address, key_balance))
             continue
 
-        balances[key_address] = get_balance(key_address)
+        balances[key_address] = key_balance
         click.echo("%s: %s" % (key_address, key_balance))
 
     click.echo("Total %d keys with balances" % (len(balances)))
@@ -234,17 +234,22 @@ def generate_workers():
     with open("spam.sh") as f:
         template = f.read()
 
-    for key_address in balances:
-        with open("workers/%s.sh" % key_address, "w+") as w:
-            w.write(
-                template.replace("CHAIN_ID", config.CHAIN_ID)
-                        .replace("BINARY", config.BINARY)
-                        .replace("RPC_URL", config.RPC_URL)
-                        .replace("KEYRING_PASSWORD", config.KEYRING_PASSWORD)
-                        .replace("SEND_FROM", key_address)
-                        .replace("SEND_TO", random.choice(balances.keys()))
-                        .replace()
-            )
+    _password = config.KEYRING_PASSWORD.decode().strip()
+    with open("spam_local.sh", "w+") as w:
+        w.write(
+            template.replace("{CHAIN_ID}", config.CHAIN_ID)
+                    .replace("{BINARY}", config.BINARY)
+                    .replace("{VALOPER}", config.VALOPER)
+                    .replace("{RPC_URL}", config.RPC_URL)
+                    .replace("{KEYRING_PASSWORD}", _password)
+        )
+    os.chmod("spam_local.sh", 777)
+
+    _keys = list(balances.keys())
+    with open("screen.sh", "w+") as w:
+        for key_address in balances:
+            w.write("screen -dmS %s ./spam_local.sh %s %s\n" % (
+                key_address, key_address, random.choice(_keys)))
 
 
 if __name__ == "__main__":

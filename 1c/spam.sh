@@ -2,14 +2,14 @@
 
 PATH_TO_SERVICE='{BINARY}'
 KEY_PASSWORD='{KEYRING_PASSWORD}'
-ACCOUNT='{SEND_FROM}'
-TO_ADDRESS='{SEND_TO}'
-CHAIN_ID='{CHAIN_ID}'
+ACCOUNT=${1}
+TO_ADDRESS=${2}
+CHAIN_ID=umeevengers-1c
 MEMO='{VALOPER}'
 DENOM=uumee
 SEND_AMOUNT=1
-FEE_AMOUNT=1
-NODE='{RPC_URL}'
+FEE_AMOUNT=200
+NODE=${3:-"http://localhost:26657"}
 
 SEQ=$(${PATH_TO_SERVICE} q account ${ACCOUNT} -o json | jq '.sequence | tonumber')
 
@@ -23,6 +23,7 @@ do
         ${SEND_AMOUNT}${DENOM} \
         --fees ${FEE_AMOUNT}${DENOM} \
         --chain-id $CHAIN_ID \
+        --note $MEMO \
         --output json \
         -s $SEQ \
         --timeout-height $(($CURRENT_BLOCK + 5)) -y | \
@@ -43,6 +44,7 @@ do
     else
         FEE_AMOUNT=$(echo "$FEE_AMOUNT - 1" | bc -l)
         echo "Success. Decrement fee to $FEE_AMOUNT"
+	echo $TX_RESULT_RAW_LOG
     fi
 
     echo $SEQ
