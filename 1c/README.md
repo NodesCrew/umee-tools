@@ -16,7 +16,7 @@ pip3 install click
 python3 challenge.py create-keys --keys-number 5
 ```
 4. Put your self-delegate wallet into "keys/main.json"
-```json
+```bash
 umeed keys show WALLET_HERE --output json
 ```
 5. Load your created wallets from self-delegate address balance
