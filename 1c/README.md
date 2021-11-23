@@ -16,6 +16,7 @@ umeed tx distribution withdraw-all-rewards --from WALLET_HERE --chain-id $UMEE_C
 
 KEYRING_PASSWORD = b"password\n"
 BINARY = "/root/go/bin/umeed"
+VALOPER = "umeevaloper13zz9xkvgakzl7eq4sh4a0qnhpm7q8lyuul2k68"
 ```
 4. Create N wallets with create_keys.py
 ```bash
@@ -29,4 +30,12 @@ umeed keys show WALLET_HERE --output json
 6. Load your created wallets from self-delegate address balance
 ```bash
 python3 challenge.py load-funds --fee=100 --limit=10000
+```
+7. Import all keys on 2,3..N server
+```bash
+python3 challenge.py import-keys
+```
+8. Generate workers on 2,3..N server
+```bash
+python3 challenge.py generate-workers
 ```

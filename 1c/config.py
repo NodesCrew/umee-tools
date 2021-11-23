@@ -5,6 +5,7 @@ BINARY = "umeed"
 RPC_URL = "tcp://localhost:26657/"
 
 KEYRING_PASSWORD = b"password\n"
+VALOPER = ""
 
 
 try:

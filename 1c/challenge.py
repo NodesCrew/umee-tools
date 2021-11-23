@@ -5,6 +5,7 @@ import glob
 import json
 import click
 import config
+import random
 import datetime
 
 from subprocess import PIPE
@@ -81,7 +82,7 @@ def get_balance(account):
     return int(balances[0]["amount"])
 
 
-def create_account(name):
+def umeed_add_key(name):
     output = check_output_input(
         [config.BINARY, "keys", "add", name, "--output", "json"],
         input=config.KEYRING_PASSWORD
@@ -91,7 +92,23 @@ def create_account(name):
         w.write(output)
 
 
-def send_funds(source, target, amount, fee):
+def umeed_import_key(name, mnemonic):
+    input_ = b"%s\n%s" % (mnemonic.encode(), config.KEYRING_PASSWORD)
+    output = check_output_input(
+        [config.BINARY, "keys", "add", name, "--recover", "--output", "json"],
+        input=input_
+    ).decode()
+
+
+def umeed_read_keys():
+    output = check_output_input(
+        [config.BINARY, "keys", "list", "--output", "json"],
+        input=config.KEYRING_PASSWORD
+    ).decode()
+    return json.loads(output)
+
+
+def umeed_send_tx(source, target, amount, fee):
     output = check_output_input([config.BINARY, "tx", "bank", "send",
                                  source,
                                  target,
@@ -102,8 +119,6 @@ def send_funds(source, target, amount, fee):
                                  "--chain-id", config.CHAIN_ID,
                                  "--yes"],
                                 input=config.KEYRING_PASSWORD).decode()
-
-    print(output)
 
 
 @click.group()
@@ -121,8 +136,29 @@ def create_keys(keys_number):
     for i in range(0, keys_number):
         account_name = "%s_%s" % (prefix, i)
         click.echo("Create account %s" % account_name)
-        create_account(account_name)
+        umeed_add_key(account_name)
     click.echo("Done")
+
+
+@cli.command()
+def import_keys():
+    click.echo("Read exists keys from umeed")
+    exists_keys_names = set(k["name"] for k in umeed_read_keys())
+    click.echo("Total %d exists keys found" % len(exists_keys_names))
+
+    click.echo("Import keys from 'keys' directory into ummed wallets list")
+    for key_path in glob.glob("keys/*.json"):
+        if key_path.endswith("main.json"):
+            continue
+
+        key = read_key(key_path)
+        if key["name"] in exists_keys_names:
+            click.echo("Skip import exists key %s" % key["name"])
+            continue
+
+        click.echo("Start import for key %s" % key["name"])
+        umeed_import_key(key["name"], key["mnemonic"])
+
 
 
 @cli.command()
@@ -143,10 +179,10 @@ def load_funds(limit, fee, no_skip_funded):
 
     click.echo("Read keys for loading")
     addresses = set()
-    for key_file in glob.glob("keys/*.json"):
-        if key_file.endswith("main.json"):
+    for key_path in glob.glob("keys/*.json"):
+        if key_path.endswith("main.json"):
             continue
-        curr_key = read_key(key_file)
+        curr_key = read_key(key_path)
         addresses.add(curr_key["address"])
     click.echo("Found %d keys" % len(addresses))
 
@@ -172,7 +208,43 @@ def load_funds(limit, fee, no_skip_funded):
                 continue
 
         click.echo("Load %d tokens to %s" % (load_size, target))
-        send_funds(main_addr, target, amount=load_size, fee=fee)
+        umeed_send_tx(main_addr, target, amount=load_size, fee=fee)
+
+
+@cli.command()
+def generate_workers():
+    if not os.path.exists("workers"):
+        os.makedirs("workers")
+
+    click.echo("Get balances for all keys")
+    balances = {}
+    for key in umeed_read_keys():
+        key_address = key["address"]
+        key_balance = get_balance(key_address)
+
+        if key_balance < 200:
+            click.echo("Skip %s (balance %d)" % (key_address, key_balance))
+            continue
+
+        balances[key_address] = get_balance(key_address)
+        click.echo("%s: %s" % (key_address, key_balance))
+
+    click.echo("Total %d keys with balances" % (len(balances)))
+
+    with open("spam.sh") as f:
+        template = f.read()
+
+    for key_address in balances:
+        with open("workers/%s.sh" % key_address, "w+") as w:
+            w.write(
+                template.replace("CHAIN_ID", config.CHAIN_ID)
+                        .replace("BINARY", config.BINARY)
+                        .replace("RPC_URL", config.RPC_URL)
+                        .replace("KEYRING_PASSWORD", config.KEYRING_PASSWORD)
+                        .replace("SEND_FROM", key_address)
+                        .replace("SEND_TO", random.choice(balances.keys()))
+                        .replace()
+            )
 
 
 if __name__ == "__main__":
